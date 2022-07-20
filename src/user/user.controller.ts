@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -23,6 +24,11 @@ export class UserController {
   @Get()
   findAll() {
     return this.userService.findAllUsers();
+  }
+
+  @Get('search')
+  findByEmail(@Query('email') email: string) {
+    return this.userService.findUserByEmail(email);
   }
 
   @Get(':id')
