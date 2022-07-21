@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -9,9 +11,25 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  async userRegistration(createUserDto: CreateUserDto) {
+    const candidate = await this.userService.findUserByEmail(
+      createUserDto.email,
+    );
+    if (candidate) {
+      throw new BadRequestException('User with this email already exists');
+    }
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
+    const user = await this.userService.createUser({
+      ...createUserDto,
+      password: hashedPassword,
+    });
+    return this.generateToken(user);
+  }
+
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userService.findUserByEmail(email);
-    if (user && password === user.password) {
+    const validPass = await bcrypt.compare(password, user.password);
+    if (user && validPass) {
       const { password, ...result } = user;
       return result;
     }
@@ -19,9 +37,13 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { username: user.email, sub: user.id };
+    return this.generateToken(user);
+  }
+
+  private async generateToken(user: any) {
+    const payload = { username: user.email, id: user.id };
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: await this.jwtService.sign(payload),
     };
   }
 }
