@@ -38,4 +38,10 @@ export class UserService {
   async deleteUser(id: number) {
     return await this.userRepository.delete(id);
   }
+
+  async getPersonalInfo(user: any) {
+    const profile = await this.findUserById(user.id);
+    const { id, password, ...restUserInfo } = profile;
+    return restUserInfo;
+  }
 }

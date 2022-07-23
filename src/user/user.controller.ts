@@ -7,7 +7,10 @@ import {
   Post,
   Put,
   Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
@@ -31,10 +34,10 @@ export class UserController {
     return this.userService.findUserByEmail(email);
   }
 
-  @Get(':id')
-  findById(@Param('id') id: number) {
-    return this.userService.findUserById(id);
-  }
+  // @Get(':id')
+  // findById(@Param('id') id: number) {
+  //   return this.userService.findUserById(id);
+  // }
 
   @Put(':id')
   updateById(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
@@ -44,5 +47,11 @@ export class UserController {
   @Delete(':id')
   deleteById(@Param('id') id: number) {
     return this.userService.deleteUser(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    return this.userService.getPersonalInfo(req.user);
   }
 }
