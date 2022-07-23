@@ -1,16 +1,10 @@
-import {
-  Body,
-  Controller,
-  Post,
-  UseGuards,
-  Request,
-  Response,
-  HttpStatus,
-} from '@nestjs/common';
+import { Body, Controller, Post, Response, HttpStatus } from '@nestjs/common';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './guard/local-auth.guard';
+import { LoginDto } from './dto/login.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -20,10 +14,9 @@ export class AuthController {
     return this.authService.userRegistration(createUserDto);
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@Request() req, @Response({ passthrough: true }) res) {
+  login(@Body() loginDto: LoginDto, @Response({ passthrough: true }) res) {
     res.status(HttpStatus.OK);
-    return this.authService.login(req.user);
+    return this.authService.login(loginDto);
   }
 }
