@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -16,6 +17,7 @@ export class User {
   @Column({ nullable: false, unique: true })
   email: string;
 
+  @Exclude()
   @Column({ nullable: false })
   password: string;
 
@@ -33,4 +35,8 @@ export class User {
 
   @OneToMany((type) => Post, (post) => post.author)
   posts: Post[];
+
+  constructor(partial: Partial<User>) {
+    Object.assign(this, partial);
+  }
 }
