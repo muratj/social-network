@@ -9,8 +9,11 @@ import {
   Put,
   Param,
   Delete,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostService } from './post.service';
@@ -21,10 +24,16 @@ export class PostController {
   constructor(private postService: PostService) {}
 
   @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('image'))
   @Post()
-  create(@Body() createPostDto: CreatePostDto, @Request() req) {
-    return this.postService.savePost(createPostDto, req.user);
+  create(
+    @Body() createPostDto: CreatePostDto,
+    @UploadedFile() image,
+    @Request() req,
+  ) {
+    return this.postService.savePost(createPostDto, image, req.user);
   }
 
   @ApiBearerAuth()
